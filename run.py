@@ -35,7 +35,7 @@ def handle_sus_connection(packet: Packet):
     if packet.haslayer(Raw):
         data = packet[Raw].load.decode(errors="ignore")
         print(f'payload:\n{data}')
-    my_logger.log_alert(packet[IP].src, packet[IP].sport, packet[IP].dst, packet[TCP].dport, data)
+    my_logger.log_alert(packet[IP].src, packet[IP].sport, packet[IP].dst, packet[TCP].dport, packet[TCP].seq, data)
 
 def proccess_capture_packets(packet: Packet):
     '''
@@ -47,10 +47,6 @@ def proccess_capture_packets(packet: Packet):
             if (packet[TCP].flags == TCP_FLAGS[0] or packet[TCP].flags == TCP_FLAGS[1]):
                 print('Captured TCP connection handshake ')
             handle_sus_connection(packet)
-
-
-
-
 
 def start_sniffer(interface_name: str  = conf.iface):
     '''This function start sniffing by given interface'''
@@ -92,8 +88,12 @@ def get_desierd_interface() -> Optional[str]:
 def main():
     interface: str = get_desierd_interface()
     #print(interface)
-    start_sniffer(interface)
-
+    try:
+        start_sniffer(interface)
+    except e:
+        print(e)
+    finally:
+        my_logger.reassemble_from_log()
 
 if __name__ == "__main__":
     main()
