@@ -1,61 +1,86 @@
 # Network Canary Monitor
 
-A Python tool designed to detect, log, and analyze suspicious TCP connections from local networks to specific ports (9000-9010). 
+## Overview
+
+Network Canary Monitor is a Python-based tool designed to detect, log, and analyze **suspicious TCP connections** from local networks to specific ports (**9000-9010**). The system monitors traffic, logs suspicious activity, and reconstructs TCP streams for offline analysis.
 
 ## Features
 
-- **Connection Monitoring:** Detects outgoing TCP connections from local networks to designated ports.
-- **Dual Logging:** Keeps both human-readable and structured JSON logs for better analysis.
-- **Stream Reassembly:** Sorts and reconstructs TCP streams to get a full picture of transmitted data.
-- **Payload Analysis:** Extracts and examines payloads, truncating large messages while computing MD5 hashes for integrity checks.
-- **Interactive Interface Selection:** Allows users to choose a network interface dynamically for accurate sniffing.
+- **Connection Monitoring** – Detects outbound TCP connections from local networks to designated ports.
+- **Dual Logging** – Saves alerts in both **human-readable log files** and **structured JSON logs** for easy processing.
+- **Stream Reassembly** – Reconstructs full TCP streams using sequence numbers for a complete analysis.
+- **Payload Analysis** – Extracts and examines transmitted data, truncating large messages and computing **MD5 hashes**.
+- **Interactive Interface Selection** – Allows users to select network interfaces dynamically for accurate sniffing.
+- **Test Environment** – Includes a sample `client.py` and `server.py` for traffic simulation.
 
 ## Installation
 
-1. Clone the repository.
-2. Install dependencies:
+To set up Network Canary Monitor, follow these steps:
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nabeeh779/The-Eavesdropping-Canary/tree/developx
+   ```
+
+2. **Install dependencies**
    ```bash
    pip install scapy netaddr
    ```
 
-## How to Use
+3. **Ensure you run with administrative privileges** for packet sniffing.
 
-Run the tool with:
+## Usage
+
+Run the monitor with:
 ```bash
-python canary_monitor.py
+python run.py
 ```
 
-What to expect:
-1. You'll be prompted to select a network interface.
-2. The tool will begin monitoring for suspicious connections.
-3. Logs will be saved in:
-   - `canary_alerts.log` (human-readable)
-   - `canary_alerts.json` (structured for easier processing)
-   - `reassembled_streams.log` (complete network conversations)
+1. You’ll be prompted to **select a network interface** for sniffing.
+2. The monitor will **log suspicious connections** as they occur.
+3. Logs are saved in:
+   - `canary_alerts.log` (human-readable alerts)
+   - `canary_alerts.json` (structured JSON for parsing)
+   - `reassembled_streams.log` (complete TCP streams)
+
+### Running the Test Environment
+
+To simulate network activity, run **client and server scripts** inside the `server_client_test/` folder.
+
+1. Start the **server** to listen for incoming connections:
+   ```bash
+   python server_client_test/server.py
+   ```
+2. Run the **client** to generate and send random data:
+   ```bash
+   python server_client_test/client.py
+   ```
+
+Network Canary Monitor will detect connections and log activity.
 
 ## How Suspicious Connections Are Identified
 
-A connection is flagged if:
-- It originates from a local network.
-- It targets TCP ports 9000-9010.
-- It contains SYN, ACK, or transmitted payloads.
+A TCP connection is flagged as **suspicious** if:
+- It **originates** from a **local network**.
+- It **targets TCP ports 9000-9010**.
+- It contains **SYN, ACK, or transmitted payloads**.
 
 ## Logging Details
 
-For each flagged connection, the tool logs:
-- Source and destination IP addresses with ports.
-- Sequence numbers to help reconstruct conversations.
-- Exact timestamps for when packets were captured.
-- Payload samples, truncated to 500 characters for readability.
-- MD5 hashes of complete streams to ensure integrity.
+For each flagged connection, the system logs:
+- **Source & Destination (IP:Port)**
+- **Sequence Numbers** (Ordered for stream reassembly)
+- **Timestamps** (Exact time of packet capture)
+- **Payload Samples** (Truncated for readability, up to **500 chars**)
+- **MD5 Hashes** (Ensuring full-stream integrity)
 
 ## Stream Reassembly
 
-Once packets are logged, the tool can reconstruct entire TCP conversations by sorting data based on sequence numbers. This allows for offline analysis rather than real-time packet inspection.
+Once packets are logged, the tool reconstructs entire TCP conversations **offline** by sorting data based on sequence numbers.
 
 ## Requirements
 
-- Python 3.6 or newer
-- Scapy for packet capture
-- netaddr for IP/network validation
-- Root or admin privileges for sniffing network traffic
+- Python **3.6+**
+- Scapy (Packet sniffing)
+- netaddr (IP validation)
+- Root/Admin privileges (Required for capturing network traffic)
