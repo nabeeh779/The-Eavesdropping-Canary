@@ -6,6 +6,11 @@ DEAFULT_INTERFACE: int = -1
 LOOPBACK_ADDRESS: str = "0.0.0.0"
 LOCAL_IP_ADDRESS_INDEX: int = 4
 CANARY_SERVICE_RANGE = range(9000, 9011)
+TCP_FLAGS = ['A' , 'S'] # ACK, SYN
+
+
+class enum:
+    ACK='A'
 
 def is_local_ip(ip) -> bool:
     ''' This function checks if given ip belongs to local network '''
@@ -23,12 +28,16 @@ def is_local_ip(ip) -> bool:
 
     return False
 
+
 def handle_sus_connection(packet: Packet):
     '''Handle suspicious connection'''
-    print(f'Suspicious connection detected form [Ip = {packet[IP].src}, dst_port= {packet[TCP].dport}]')
-    data = packet[Raw].load.decode(errors="ignore")
-    if data:
+    print(f'Suspicious connection detected form [src_Ip = {packet[IP].src}:{packet[IP].sport}] to [dst_ip = {packet[IP].dst}:{packet[TCP].dport}]')
+    print(f"Protocol: TCP/{packet[TCP].dport}")
+    if packet.haslayer(Raw):
+        data = packet[Raw].load.decode(errors="ignore")
         print(f'payload:\n{data}')
+
+
 def proccess_capture_packets(packet: Packet):
     '''
         This function handle captuerd packets, and looks for packets includes
@@ -36,7 +45,12 @@ def proccess_capture_packets(packet: Packet):
     '''
     if packet.haslayer(IP) and packet.haslayer(TCP):
         if is_local_ip(packet[IP].src) and (packet[TCP].dport in CANARY_SERVICE_RANGE):
+            if (packet[TCP].flags == TCP_FLAGS[0] or packet[TCP].flags == TCP_FLAGS[1]):
+                print('Captured TCP connection handshake ')
+
             handle_sus_connection(packet)
+
+
 
 
 
